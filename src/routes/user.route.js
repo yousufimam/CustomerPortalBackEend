@@ -1,53 +1,22 @@
 import express from "express";
+
 import authenticateToken from "../middlewares/authenticate.middleware.js";
 import * as userController from "../controllers/user.controller.js";
-import { createNewAccessToken } from "../controllers/auth.controller.js";
-import { verifyOTP, resendOTPVerification } from "../controllers/otp.controller.js";
-
+import { createUser } from "../controllers/global.controller.js";
 
 const router = express.Router();
 
+// For all users
+router.route("")
+    .get(authenticateToken, userController.fetchAllUsers)
+    .post(createUser)
+    .delete(userController.deleteAllUsers);
 
-// Sign Up route
-router.route('/signup')
-    .get(userController.fetchSignUp)
-    .post(userController.createUser);
-
-
-// Sign In route
-router.route('/signin')
-    .get(userController.fetchSignIn)
-    .post(userController.logInUser);
-
-
-// Success route
-router.route('/success')
-    .get(authenticateToken, userController.fetchSuccess);
-
-
-// Verify OTP route
-router.route("/verifyOTP")
-    .post(verifyOTP);
-
-
-// New Access Token Creation route
-router.route("/token")
-    .post(createNewAccessToken);
-
-
-// Resend OTP route
-router.route("/resendOTP")
-    .post(resendOTPVerification);
-
-
-// Fetch the authenticated user route
-router.route("/fetchUser")
+// For the specific user route
+router.route("/:userId")
     .get(authenticateToken, userController.fetchSpecificUser)
+    .patch(userController.updateSpecificUser)
+    .delete(userController.deleteSpecificUser);
 
-
-// Logout route
-router.route("/logout")
-    .post(userController.logOutUser);
-
+    
 export default router;
-
