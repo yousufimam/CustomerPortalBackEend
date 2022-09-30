@@ -1,8 +1,12 @@
 import express from "express";
 import connectDB from "./src/db/connectDB.js";
-import global from "./src/routes/global.route.js";
-import user from "./src/routes/user.route.js"
 import * as dotenv from 'dotenv'
+
+import global from "./src/routes/global.route.js";
+import user from "./src/routes/user.route.js";
+import product from "./src/routes/product.route.js";
+
+import authenticateToken from "./src/middlewares/authenticate.middleware.js"
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 const app = express();
@@ -20,6 +24,7 @@ connectDB(DATABASE_URL);
 app.use('/', global)
 app.use('/users', user)
 
+app.use("/products", authenticateToken, product)
 
 app.listen(port, function(){
     console.log(`Server running on port ${port}`)

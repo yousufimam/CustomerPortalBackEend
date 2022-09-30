@@ -58,11 +58,15 @@ const updateSpecificUser = async (req, res) => {
             req.body.password = await bcrypt.hash(req.body.password, parseInt(process.env.SALT_ROUNDS));
         }
 
-        await User.findByIdAndUpdate(req.params.userId, {$set: req.body});
-        res.status(200).json({ 
-            message: "User updated successfully"
-        });
-        
+        const updateUser = await User.findByIdAndUpdate(req.params.userId, {$set: req.body});
+        if(updateUser == null){
+            throw new Error("User not found")
+        }
+        else{
+            res.status(200).json({ 
+                message: "User updated successfully"
+            });
+        }
     } 
     catch (error) {
         res.status(404).json({ 
