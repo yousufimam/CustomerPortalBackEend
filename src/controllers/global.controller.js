@@ -5,16 +5,19 @@ import User from "../models/user.module.js";
 import RefreshToken from "../models/tokens.module.js";
 import {sendOTPVerificationEmail} from "./otp.controller.js";
 import { generateAccessToken } from "./auth.controller.js";
+import {StatusCodes} from 'http-status-codes';
 
 
 // GET controllers
 
 const fetchSignUp = (req, res) => {
-  return res.status(200).json({ message: "Successfully logged up" });
+  // return res.status(200).json({ message: "Successfully logged up" });
+  return res.sendStatus(StatusCodes.OK);
 };
 
 const fetchSignIn = (req, res) => {
-  return res.status(200).json({ message: "Successfully logged in" });
+  // return res.status(200).json({ message: "Successfully logged in" });
+  return res.sendStatus(StatusCodes.OK)
 };
 
 
@@ -29,12 +32,14 @@ const createUser = async function (req, res) {
   const { name, email, password } = req.body;
 
   if (name === "" || email === "" || password === "") {
-    return res.status(400).json({ message: "Invalid credentials" });
+    // return res.status(400).json({ message: "Invalid credentials" });
+    return res.sendStatus(StatusCodes.UNAUTHORIZED)
   }
 
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
-    return res.status(400).json({ message: "User already exists" });
+    // return res.status(400).json({ message: "User already exists" });
+    return res.sendStatus(StatusCodes.CONFLICT)
   }
 
   const hashedPwd = await bcrypt.hash(password, parseInt(process.env.SALT_ROUNDS));
@@ -47,6 +52,7 @@ const createUser = async function (req, res) {
     phoneNumber: req.body.phoneNumber,
     address: req.body.address,
     verified: false,
+    deleteStatus: false
   });
 
   newUser
@@ -65,16 +71,19 @@ const logInUser = async function (req, res) {
     const existingUser = await User.findOne({ email: email });
 
     if (!existingUser) {
-      return res.status(404).json({ message: "User doesn't exist" });
+      // return res.status(404).json({ message: "User doesn't exist" });
+      return res.sendStatus(StatusCodes.NOT_FOUND)
     }
 
     if(!existingUser.verified){
-      return res.status(400).json({ message: "The user is not verified yet" });
+      // return res.status(400).json({ message: "The user is not verified yet" });
+      return res.sendStatus(StatusCodes.UNAUTHORIZED)
     }
 
     const matchedPwd = bcrypt.compare(password, existingUser.password);
     if (!matchedPwd) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      // return res.status(400).json({ message: "Invalid credentials" });
+      return res.sendStatus(StatusCodes.UNAUTHORIZED)
     }
 
     const user =     {
@@ -94,7 +103,7 @@ const logInUser = async function (req, res) {
 
     newRefreshToken.save();
 
-    res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
+    res.status(StatusCodes.OK).json({ accessToken: accessToken, refreshToken: refreshToken });
   }
   catch(error){
     res.json({
@@ -110,7 +119,7 @@ const logOutUser = async (req, res) => {
   try{
     const userRecords = await User.findOne({ email: req.body.email });
     await RefreshToken.deleteOne({ userId: userRecords.id  })
-    res.json({
+    res.status(StatusCodes.OK).json({
       message: "Token deleted"
     })
   }

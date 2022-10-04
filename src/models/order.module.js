@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+
 
 // Defining Schema
 const orderSchema = new mongoose.Schema(
@@ -8,20 +10,24 @@ const orderSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
-    orderStatus: {type: String, enum : ['awaiting approval', 'order processing', 'order packing', 'awaiting shipping', 'order delivered']},
+    orderStatus: {type: String, enum : ['approval', 'processing', 'packing', 'shipping', 'delivered']},
     total: {type: Number},
-    deliveryDate: Date,
     paymentStatus: {type: String, enum: ['paid', 'pending']},
-    paymentType: {type: String, enum: ['card', 'cash']},
+    paymentMethod: {type: String, enum: ['card', 'cash']},
     shippingMethod: {type: String, required: true},
-    paymentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Payment"
-    }
+    deleteStatus: {type: Boolean, required: true},
+    // paymentId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Payment"
+    // }
+    paymentId: {type: String},
+    deliveryDate: Date,
   },
   {timestamps: true}
 );
 
+
+orderSchema.plugin(mongoosePaginate)
 // Created model from schema
 const Order = mongoose.model("Order", orderSchema);
 

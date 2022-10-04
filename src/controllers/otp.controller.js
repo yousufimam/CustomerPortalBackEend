@@ -1,7 +1,7 @@
 import transporter from "../smtp/transporter.smtp.js";
 import UserOTPVerification from "../models/otp.module.js";
 import User from "../models/user.module.js";
-
+import {StatusCodes} from 'http-status-codes';
 
 // To send otp
 
@@ -27,7 +27,7 @@ const sendOTPVerificationEmail = async (result, res) => {
   
       await transporter.sendMail(mailOptions);
 
-      res.status(201).json({
+      res.status(StatusCodes.CREATED).json({
         status: "PENDING",
         message: "Verification otp email sent",
         data: {
@@ -60,7 +60,8 @@ const verifyOTP = async (req, res) => {
         });
 
         if(userRecords.length <= 0){
-          throw new Error("Account record doesn't exist")
+          // throw new Error("Account record doesn't exist")
+          res.sendStatus(StatusCodes.NOT_FOUND)
         }
         else{
         const isVerifiedUser = userRecords[0].verified;
@@ -75,16 +76,18 @@ const verifyOTP = async (req, res) => {
   
           if(expiresAt < Date.now()){
             UserOTPVerification.deleteMany({ userId });
-            throw new Error("Code has expired. Please request again")
+            // throw new Error("Code has expired. Please request again")
+            res.sendStatus(StatusCodes.UNAUTHORIZED)
           }
           else{
               if(otp != foundOTP){
-                throw new Error("Invalid code passed")
+                // throw new Error("Invalid code passed")
+                res.sendStatus(StatusCodes.UNAUTHORIZED)
               }
               else{
                 await User.updateOne({ email: email }, { verified: true })
                 UserOTPVerification.deleteMany({ userId });
-                res.status(200).json({
+                res.status(StatusCodes.OK).json({
                   "status": "Verified",
                   "message": "Email verified successfully "
                 })
@@ -92,7 +95,7 @@ const verifyOTP = async (req, res) => {
           }
         }
         else{
-          res.status(200).json({
+          res.status(StatusCodes.OK).json({
             "status": "Verified already",
             "message": "Email verified already "
           })
@@ -115,7 +118,8 @@ const verifyOTP = async (req, res) => {
     try{
       let {email} = req.body;
       if(!email){
-        throw Error('Empty details are not allowed')
+        // throw Error('Empty details are not allowed')
+        res.sendStatus(StatusCodes.UNAUTHORIZED)
       }
       else{
         const userRecords = await User.find({
@@ -123,7 +127,8 @@ const verifyOTP = async (req, res) => {
         });
 
         if(userRecords.length <= 0){
-          throw new Error("Account record doesn't exist")
+          // throw new Error("Account record doesn't exist")
+          res.sendStatus(StatusCodes.NOT_FOUND)
         }
         else{
           const isVerified = userRecords[0].verified;
@@ -139,7 +144,7 @@ const verifyOTP = async (req, res) => {
             sendOTPVerificationEmail(result, res);
           }
           else{
-            res.status(200).json({
+            res.status(StatusCodes.OK).json({
               status: "Verified",
               message: "Already verified"
             })

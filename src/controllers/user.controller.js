@@ -1,35 +1,41 @@
 import User from "../models/user.module.js";
 import bcrypt from "bcrypt";
+import {StatusCodes} from 'http-status-codes';
 
 // All users
-const fetchAllUsers = (req, res) => {
+const fetchAllUsers = async (req, res) => {
     try{
-        User.find({ verified: true }, function(err, users){
-            if(users.length == 0){
-                res.status(404).json({
-                    message: "No users found"
-                })
-            }
-            else{
-                res.status(200).json(users)
-            }
-        })
+        // User.find({ verified: true }, function(err, users){
+        //     if(users.length == 0){
+        //         // res.status(404).json({
+        //         //     message: "No users found"
+        //         // })
+        //         res.sendStatus(StatusCodes.NOT_FOUND)
+        //     }
+        //     else{
+        //         res.status(StatusCodes.OK).json(users)
+        //     }
+        // })
+
+        const {page, perPage} = req.query;
+        const options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(perPage) || 10
+        }
+    
+        const users = await User.paginate({ verified: true }, options);
+        if(users.totalDocs == 0){
+            res.sendStatus(StatusCodes.NOT_FOUND)
+        }
+        else{
+            res.status(StatusCodes.OK).json(users)
+        }
     }
     catch(error){
         res.json(error)
     }
 }
 
-const deleteAllUsers = (req, res) => {
-    User.deleteMany({}, function(err){
-        if(err){
-            console.log(err)
-        }
-        res.json({
-            "message": "Deleted all users"
-        })
-    })
-}
 
 
 
@@ -41,7 +47,7 @@ const fetchSpecificUser = async (req, res) => {
             throw new Error("User not found")
         }
         else{
-            res.status(200).json(foundUser);
+            res.status(StatusCodes.OK).json(foundUser);
         }
     } 
     catch (error) {
@@ -60,12 +66,14 @@ const updateSpecificUser = async (req, res) => {
 
         const updateUser = await User.findByIdAndUpdate(req.params.userId, {$set: req.body});
         if(updateUser == null){
-            throw new Error("User not found")
+            // throw new Error("User not found")
+            res.sendStatus(StatusCodes.NOT_FOUND)
         }
         else{
-            res.status(200).json({ 
-                message: "User updated successfully"
-            });
+            // res.status(200).json({ 
+            //     message: "User updated successfully"
+            // });
+            res.sendStatus(StatusCodes.OK)
         }
     } 
     catch (error) {
@@ -77,15 +85,26 @@ const updateSpecificUser = async (req, res) => {
 }
 
 
-const deleteSpecificUser  = async (req, res) => {
+const deleteSpecificUser  = (req, res) => {
     try {
-        const deleteUser = await User.findByIdAndDelete(req.params.userId);
-        if(deleteUser == null){
-            throw new Error("User not found")
-        }
-        else{
-            res.status(200).json({ message: "User deleted successfully" });
-        }
+        // const deleteUser = await User.findByIdAndDelete(req.params.userId);
+        // if(deleteUser == null){
+        //     throw new Error("User not found")
+        // }
+        // else{
+        //     res.status(200).json({ message: "User deleted successfully" });
+        // }
+        User.findOneAndUpdate({userId: req.params.userId, deleteStatus: false}, {deleteStatus: true}, function(err, found){
+            if(err){
+                throw new Error("Error occured")
+            }
+            if(found == null){
+                res.sendStatus(StatusCodes.NOT_FOUND)
+            }
+            else{
+                res.sendStatus(StatusCodes.OK)
+            }
+        });
         
     } 
     catch (error) {
@@ -97,4 +116,4 @@ const deleteSpecificUser  = async (req, res) => {
 }
 
 
-export { fetchAllUsers, deleteAllUsers, fetchSpecificUser, updateSpecificUser, deleteSpecificUser }
+export { fetchAllUsers, fetchSpecificUser, updateSpecificUser, deleteSpecificUser }

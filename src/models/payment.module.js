@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 // Defining Schema
 const paymentSchema = new mongoose.Schema(
@@ -8,13 +9,20 @@ const paymentSchema = new mongoose.Schema(
         ref: "User"
     },
     status: {type: String, enum: ['received', 'cancelled']},
+    // orderId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Order"
+    // }
     orderId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Order"
-    }
-  }
+      type: String,
+      ref: "Order"
+  },
+    deleteStatus: {type: Boolean, required: true},
+  },
+  {timestamps: true}
 );
 
+paymentSchema.plugin(mongoosePaginate);
 // Created model from schema
 const Payment = mongoose.model("Payment", paymentSchema);
 

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 // Defining Schema
 const userSchema = new mongoose.Schema(
@@ -9,9 +10,12 @@ const userSchema = new mongoose.Schema(
     phoneNumber: {type: String, required: true},
     address: {type: String, required: true},
     verified: Boolean,
-  }
+    deleteStatus: Boolean
+  },
+  {timestamps: true}
 );
 
+userSchema.plugin(mongoosePaginate);
 // Created model from schema
 const User = mongoose.model("User", userSchema);
 

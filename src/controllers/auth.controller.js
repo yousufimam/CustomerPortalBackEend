@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import RefreshToken from "../models/tokens.module.js";
+import {StatusCodes} from 'http-status-codes';
 
 // To create new access token
 const createNewAccessToken = (req, res) => {
@@ -7,7 +8,8 @@ const createNewAccessToken = (req, res) => {
     const refreshToken = req.headers.token; 
 
     if( refreshToken == null ){
-      throw Error("Empty token not allowed")
+      // throw Error("Empty token not allowed")
+      return res.sendStatus(StatusCodes.UNAUTHORIZED)
     }
     else{
       RefreshToken.find({ token: refreshToken }, function(err, foundToken){
@@ -15,7 +17,8 @@ const createNewAccessToken = (req, res) => {
           console.log("Error", err)
         }
         if(!foundToken.length){
-          res.status(404).json({message: "Refresh Token not found in db"});
+          // res.status(404).json({message: "Refresh Token not found in db"});
+          res.sendStatus(StatusCodes.NOT_FOUND)
         }
         else{
           jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
@@ -23,7 +26,7 @@ const createNewAccessToken = (req, res) => {
         
             const accessToken = generateAccessToken({ email: user.email, id: user.id })
 
-            res.status(201).json({ accessToken: accessToken })
+            res.status(StatusCodes.ACCEPTED).json({ accessToken: accessToken })
           })
         }
       });

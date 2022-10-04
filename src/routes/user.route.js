@@ -10,7 +10,6 @@ const router = express.Router();
 router.route("")
     .get(authenticateToken, userController.fetchAllUsers)
     .post(createUser)
-    .delete(userController.deleteAllUsers);
 
 // For the specific user route
 router.route("/:userId")
