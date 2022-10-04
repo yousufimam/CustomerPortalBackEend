@@ -9,6 +9,8 @@ REFRESH_TOKEN_SECRET=Your refresh token secret key
 AUTH_EMAIL=your email
 AUTH_PASS=your app password
 SALT_ROUNDS=your salt rounds (in number)
+URL=Your mongodb connection link
+PORT=27017
 ```
 
 2. #### Install Libraries 
